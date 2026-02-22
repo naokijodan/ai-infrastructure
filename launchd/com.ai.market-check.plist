@@ -26,7 +26,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+		<string>/Users/naokijodan/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
 		<key>HOME</key>
 		<string>/Users/naokijodan</string>
 	</dict>

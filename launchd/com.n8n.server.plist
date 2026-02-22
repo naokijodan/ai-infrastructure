@@ -6,7 +6,7 @@
 	<string>com.n8n.server</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/bin/n8n</string>
+		<string>/Users/naokijodan/.npm-global/bin/n8n</string>
 		<string>start</string>
 	</array>
 	<key>RunAtLoad</key>
@@ -20,7 +20,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+		<string>/Users/naokijodan/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
 		<key>HOME</key>
 		<string>/Users/naokijodan</string>
 		<key>N8N_PORT</key>
