@@ -1,0 +1,131 @@
+{
+  "name": "Execution Guard Workflow",
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {
+        "path": "claude-auto",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {
+          "rawBody": true
+        }
+      }
+    },
+    {
+      "id": "HMACCheck",
+      "name": "HMAC Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const crypto = require('crypto');\nconst fs = require('fs');\nconst os = require('os');\nconst path = require('path');\n\nfunction readSecret() {\n  if (process.env.HMAC_SECRET) return process.env.HMAC_SECRET;\n  const candidates = [\n    path.join(os.homedir(), 'ai-scripts', 'hmac.key'),\n    path.join(os.homedir(), 'ai-scripts', 'hmac_secret'),\n    path.join(os.homedir(), '.config', 'ai-scripts', 'hmac.key'),\n  ];\n  for (const p of candidates) {\n    try {\n      const s = fs.readFileSync(p, 'utf8').trim();\n      if (s) return s;\n    } catch (_) {}\n  }\n  throw new Error('HMAC secret not found');\n}\n\nfunction getHeaderSignature(headers) {\n  const key = Object.keys(headers || {}).find(k => k.toLowerCase() === 'x-hmac-signature');\n  return key ? String(headers[key]) : undefined;\n}\n\nconst secret = readSecret();\nconst item = items[0] || { json: {} };\nconst headers = item.json.headers || {};\nlet signature = getHeaderSignature(headers);\nif (!signature) {\n  throw new Error('Missing X-HMAC-Signature header');\n}\nsignature = signature.trim();\nif (signature.startsWith('sha256=')) signature = signature.slice(7);\n\nlet rawBuffer;\n// Webhook with Raw Body enabled should store base64 in item.binary.data.data\nif (item.binary && item.binary.data && item.binary.data.data) {\n  rawBuffer = Buffer.from(item.binary.data.data, 'base64');\n} else if (item.binary && item.binary.data) {\n  const b = item.binary.data;\n  rawBuffer = Buffer.from(b.data ? b.data : b, 'base64');\n} else if (item.json && item.json.body) {\n  rawBuffer = Buffer.from(JSON.stringify(item.json.body));\n} else {\n  rawBuffer = Buffer.from(JSON.stringify(item.json || {}));\n}\n\nconst computedHex = crypto.createHmac('sha256', secret).update(rawBuffer).digest('hex');\nlet providedBuf, computedBuf;\ntry {\n  providedBuf = Buffer.from(signature, 'hex');\n  computedBuf = Buffer.from(computedHex, 'hex');\n} catch (e) {\n  throw new Error('Invalid signature format');\n}\nif (providedBuf.length !== computedBuf.length || !crypto.timingSafeEqual(providedBuf, computedBuf)) {\n  throw new Error('Invalid HMAC signature');\n}\nreturn items;"
+      }
+    },
+    {
+      "id": "RateLimiter",
+      "name": "Rate Limiter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        300
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\nconst os = require('os');\n\nconst DAILY_LIMIT = 10;\nconst dir = path.join(os.homedir(), 'ai-scripts');\nconst file = path.join(dir, 'counter.txt');\nfs.mkdirSync(dir, { recursive: true });\n\nconst today = new Date().toISOString().slice(0, 10);\nlet count = 0;\nif (fs.existsSync(file)) {\n  const content = fs.readFileSync(file, 'utf8').trim();\n  if (content) {\n    const [date, cntStr] = content.split(':');\n    if (date === today) {\n      count = parseInt(cntStr || '0', 10) || 0;\n    }\n  }\n}\nif (count >= DAILY_LIMIT) {\n  throw new Error('Daily limit reached (10/10)');\n}\ncount += 1;\nfs.writeFileSync(file, `${today}:${count}\n`, 'utf8');\nreturn items;"
+      }
+    },
+    {
+      "id": "ExecuteClaude",
+      "name": "Execute Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const { execFileSync } = require('child_process');\nconst os = require('os');\nconst path = require('path');\n\nconst input = items[0]?.json || {};\nconst body = input.body || input;\nconst template = body.template || body.templateName || body.t;\nif (!template) {\n  return [{ json: { success: false, error: 'Missing template parameter', template: null } }];\n}\nconst script = path.join(os.homedir(), 'ai-scripts', 'run-claude.sh');\ntry {\n  const stdout = execFileSync(script, ['--template', String(template)], { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });\n  return [{ json: { success: true, template: String(template), output: stdout.trim() } }];\n} catch (e) {\n  const errMsg = e.stderr ? String(e.stderr) : e.message || 'Execution failed';\n  return [{ json: { success: false, template: String(template), error: errMsg } }];\n}"
+      }
+    },
+    {
+      "id": "NotifyResult",
+      "name": "Notify Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        300
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const https = require('https');\n\nconst data = items[0]?.json || {};\nconst success = !!data.success;\nconst template = data.template || 'N/A';\nconst outText = String(data.output || data.error || '');\nconst snippet = outText.slice(0, 500);\nconst status = success ? 'SUCCESS' : 'FAILED';\nconst text = `[${status}] Claude run\\nTemplate: ${template}\\n${snippet}`;\n\nconst token = process.env.LINE_CHANNEL_ACCESS_TOKEN;\nif (!token) {\n  console.log('LINE_CHANNEL_ACCESS_TOKEN not set; skipping LINE notify.');\n  console.log(text);\n  return [{ json: { notified: false, message: text } }];\n}\n\nconst payload = JSON.stringify({ messages: [{ type: 'text', text }] });\nconst options = {\n  hostname: 'api.line.me',\n  path: '/v2/bot/message/broadcast',\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': `Bearer ${token}`,\n    'Content-Length': Buffer.byteLength(payload)\n  },\n  timeout: 5000\n};\n\nreturn await new Promise((resolve) => {\n  const req = https.request(options, (res) => {\n    let body = '';\n    res.on('data', (c) => body += c);\n    res.on('end', () => {\n      const ok = res.statusCode >= 200 && res.statusCode < 300;\n      resolve([{ json: { notified: ok, statusCode: res.statusCode, response: body, message: text } }]);\n    });\n  });\n  req.on('error', (err) => {\n    resolve([{ json: { notified: false, error: err.message, message: text } }]);\n  });\n  req.write(payload);\n  req.end();\n});"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HMAC Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Check": {
+      "main": [
+        [
+          {
+            "node": "Rate Limiter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limiter": {
+      "main": [
+        [
+          {
+            "node": "Execute Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Claude": {
+      "main": [
+        [
+          {
+            "node": "Notify Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "active": false
+}
+

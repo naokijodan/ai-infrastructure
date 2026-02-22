@@ -1,0 +1,81 @@
+{
+  "name": "Webhook With HMAC → Execute Claude",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "claude-exec-secure",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const crypto = require('crypto');\nconst fs = require('fs');\nconst os = require('os');\n\nconst items = $input.all();\nif (!items.length) {\n  throw new Error('No items to validate');\n}\n\nconst item = items[0];\n\nconst headers = (item.json && item.json.headers) ? item.json.headers : {};\nlet receivedSignature = null;\nfor (const k of Object.keys(headers || {})) {\n  if (k.toLowerCase() === 'x-hmac-signature') {\n    receivedSignature = String(headers[k]).trim();\n    break;\n  }\n}\n\nif (!receivedSignature) {\n  throw new Error('Invalid HMAC signature');\n}\n\nlet payloadStr;\nif (item.binary && item.binary.data && item.binary.data.data) {\n  payloadStr = Buffer.from(item.binary.data.data, 'base64').toString('utf8');\n} else {\n  const body = (item.json && item.json.body !== undefined) ? item.json.body : item.json;\n  payloadStr = JSON.stringify(body ?? {});\n}\n\nlet secret = process.env.WEBHOOK_SECRET;\nif (!secret) {\n  try {\n    secret = fs.readFileSync(`${os.homedir()}/ai-scripts/.webhook-secret`, 'utf8').trim();\n  } catch {}\n}\nif (!secret) {\n  throw new Error('Missing WEBHOOK_SECRET');\n}\n\nconst computed = crypto.createHmac('sha256', secret).update(payloadStr).digest('hex');\n\nconst a = Buffer.from(computed, 'utf8');\nconst b = Buffer.from(receivedSignature, 'utf8');\nif (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {\n  throw new Error('Invalid HMAC signature');\n}\n\nreturn items;"
+      },
+      "id": "HMAC Validator",
+      "name": "HMAC Validator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const { execSync } = require('child_process');\nconst template = $input.first().json.body.template || 'market-check';\nconst cmd = '/Users/naokijodan/ai-scripts/run-claude.sh --template ' + template;\ntry {\n  const result = execSync(cmd, { timeout: 300000, encoding: 'utf-8' });\n  return [{ json: { success: true, output: result } }];\n} catch(e) {\n  return [{ json: { success: false, error: e.message } }];\n}",
+        "mode": "runOnceForAllItems"
+      },
+      "id": "Execute Claude",
+      "name": "Execute Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HMAC Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Validator": {
+      "main": [
+        [
+          {
+            "node": "Execute Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}
+

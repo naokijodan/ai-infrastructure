@@ -1,0 +1,149 @@
+{
+  "name": "LINE Bot Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-bot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "Webhook_1",
+      "name": "LINE Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "Respond_1",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "JavaScript",
+        "jsCode": "const items = $input.all();\n\n// LINE webhook payload example:\n// { events: [ { type, replyToken, message: { type: 'text', text }, ... } ] }\n\nfunction normalizeText(t) {\n  if (!t) return '';\n  return String(t).trim();\n}\n\nfunction mapTemplateFromText(text) {\n  const t = normalizeText(text);\n  const lower = t.toLowerCase();\n  if (t === '市場チェック' || lower === 'market') return 'market-check';\n  if (t === 'リサーチ' || lower === 'research') return 'resale-research';\n  if (t === '議論' || lower === 'discuss') return 'ai-discussion';\n  if (t === '時計' || lower === 'watch') return 'watch-data-add';\n  return null;\n}\n\nconst out = [];\nfor (const item of items) {\n  const body = item.json?.body ?? item.json;\n  const events = Array.isArray(body?.events) ? body.events : [];\n  const messageEvent = events.find(e => e && e.type === 'message' && e.message && e.message.type === 'text');\n\n  if (!messageEvent) {\n    // No message event; still produce a safe output to avoid breaking the flow\n    out.push({ json: { replyToken: body?.events?.[0]?.replyToken || '', template: null, originalText: '' } });\n    continue;\n  }\n\n  const replyToken = messageEvent.replyToken || '';\n  const originalText = normalizeText(messageEvent.message?.text || '');\n  const template = mapTemplateFromText(originalText);\n\n  out.push({ json: { replyToken, template, originalText } });\n}\n\nreturn out;"
+      },
+      "id": "Code_Parse_1",
+      "name": "Parse LINE Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "JavaScript",
+        "jsCode": "const items = $input.all();\n\n// Executes local run-claude.sh with either a template or raw text.\n// - If template is present: ./run-claude.sh --template {template}\n// - Else: ./run-claude.sh \"{text}\"\n\nconst results = [];\n\nfor (const item of items) {\n  const { template, originalText, replyToken } = item.json;\n  let resultText = '';\n  try {\n    const cp = require('child_process');\n    let args;\n\n    if (template) {\n      args = ['--template', String(template)];\n    } else {\n      // Pass the text as a single argument to preserve spacing\n      args = [String(originalText || '')];\n    }\n\n    const res = cp.spawnSync('./run-claude.sh', args, { encoding: 'utf8' });\n    if (res.error) throw res.error;\n\n    const stdout = (res.stdout || '').trim();\n    const stderr = (res.stderr || '').trim();\n\n    resultText = stdout || (stderr ? (`[stderr]\n${stderr}`) : '');\n  } catch (err) {\n    resultText = `エラーが発生しました: ${err?.message || String(err)}`;\n  }\n\n  // LINE text message max length is 5000 chars; keep a margin\n  if (resultText && resultText.length > 4800) {\n    resultText = resultText.slice(0, 4800) + '\n... (truncated)';\n  }\n\n  results.push({ json: { replyToken, resultText } });\n}\n\nreturn results;"
+      },
+      "id": "Code_Claude_1",
+      "name": "Execute Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "requestMethod": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "jsonParameters": true,
+        "options": {},
+        "queryParametersUi": {
+          "parameter": []
+        },
+        "headersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.LINE_CHANNEL_ACCESS_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersJson": "={{ { replyToken: $json.replyToken, messages: [{ type: 'text', text: $json.resultText || '（空の返信）' }] } }}"
+      },
+      "id": "HTTP_Reply_1",
+      "name": "Reply to LINE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "LINE Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse LINE Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LINE Message": {
+      "main": [
+        [
+          {
+            "node": "Execute Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Claude": {
+      "main": [
+        [
+          {
+            "node": "Reply to LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {}
+}
+

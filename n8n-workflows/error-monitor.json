@@ -1,0 +1,71 @@
+{
+  "name": "Error Monitor Workflow",
+  "nodes": [
+    {
+      "id": "ErrorTrigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "FormatError",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const i = items[0]?.json || {};\nconst wfName = (i.workflow && (i.workflow.name || i.workflow.id)) || i.workflowName || 'Unknown';\nconst nodeName = (i.node && i.node.name) || i.nodeName || 'Unknown';\nconst msg = (i.error && (i.error.message || i.error.description)) || i.message || 'No message';\nconst ts = i.ts || i.timestamp || new Date().toISOString();\nconst text = `[ERROR] Workflow: ${wfName}\\nNode: ${nodeName}\\nTime: ${ts}\\nMessage: ${msg}`;\nreturn [{ json: { text, workflow: wfName, node: nodeName, timestamp: ts, message: msg } }];"
+      }
+    },
+    {
+      "id": "ErrorNotify",
+      "name": "Error Notify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        300
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const https = require('https');\nconst fs = require('fs');\nconst path = require('path');\nconst os = require('os');\n\nconst payloadText = items[0]?.json?.text || 'Unknown error';\nconst token = process.env.LINE_CHANNEL_ACCESS_TOKEN;\n\nif (token) {\n  const payload = JSON.stringify({ messages: [{ type: 'text', text: payloadText }] });\n  const options = {\n    hostname: 'api.line.me',\n    path: '/v2/bot/message/broadcast',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'Authorization': `Bearer ${token}`,\n      'Content-Length': Buffer.byteLength(payload)\n    },\n    timeout: 5000\n  };\n  const result = await new Promise((resolve) => {\n    const req = https.request(options, (res) => {\n      let body = '';\n      res.on('data', (c) => body += c);\n      res.on('end', () => resolve({ statusCode: res.statusCode, body }));\n    });\n    req.on('error', (err) => resolve({ error: err.message }));\n    req.write(payload);\n    req.end();\n  });\n  return [{ json: { notified: true, channel: 'line', result } }];\n} else {\n  const dir = path.join(os.homedir(), 'ai-scripts', 'logs');\n  const file = path.join(dir, 'errors.log');\n  fs.mkdirSync(dir, { recursive: true });\n  const line = `${new Date().toISOString()} ${payloadText}\n`;\n  fs.appendFileSync(file, line, 'utf8');\n  return [{ json: { notified: false, channel: 'file', path: file } }];\n}"
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [
+          {
+            "node": "Error Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "active": false
+}
+
