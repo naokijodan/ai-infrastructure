@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI活用 5階層インフラ構築ガイド</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --card-hover: #1a1a28;
+      --border: #2a2a3a;
+      --text: #e0e0e8;
+      --text-muted: #8888a0;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --green: #00b894;
+      --green-light: #55efc4;
+      --orange: #fdcb6e;
+      --red: #ff7675;
+      --blue: #74b9ff;
+      --floor1: #00b894;
+      --floor2: #0984e3;
+      --floor3: #6c5ce7;
+      --floor4: #e17055;
+      --floor5: #fdcb6e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      background: linear-gradient(180deg, #12121a 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--accent-light), var(--green-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-green { background: rgba(0,184,148,0.15); color: var(--green-light); border: 1px solid rgba(0,184,148,0.3); }
+    .badge-purple { background: rgba(108,92,231,0.15); color: var(--accent-light); border: 1px solid rgba(108,92,231,0.3); }
+    .badge-orange { background: rgba(253,203,110,0.15); color: var(--orange); border: 1px solid rgba(253,203,110,0.3); }
+
+    /* Nav */
+    .nav {
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,15,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      padding: 12px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      background: var(--card);
+    }
+
+    /* Sections */
+    section {
+      padding: 60px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 32px;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 32px 0 16px;
+      color: var(--accent-light);
+    }
+
+    h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 24px 0 12px;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+
+    /* Building visualization */
+    .building {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 600px;
+      margin: 32px auto;
+    }
+
+    .floor {
+      display: flex;
+      align-items: stretch;
+      border: 2px solid var(--border);
+      border-bottom: none;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .floor:last-child { border-bottom: 2px solid var(--border); }
+
+    .floor:hover {
+      transform: translateX(4px);
+      border-color: var(--accent);
+    }
+
+    .floor-num {
+      width: 64px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .floor-content {
+      flex: 1;
+      padding: 16px 20px;
+      background: var(--card);
+    }
+
+    .floor-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .floor-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .floor-status {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .status-done { background: rgba(0,184,148,0.2); color: var(--green-light); }
+    .status-partial { background: rgba(253,203,110,0.2); color: var(--orange); }
+    .status-todo { background: rgba(255,118,117,0.2); color: var(--red); }
+
+    /* Cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      background: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: #1a1a2e;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--green-light);
+    }
+
+    .code-block .comment { color: #666680; }
+    .code-block .cmd { color: var(--blue); }
+    .code-block .str { color: var(--orange); }
+    .code-block .key { color: var(--accent-light); }
+
+    /* Flow diagram */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 24px 0;
+      overflow-x: auto;
+      padding: 16px 0;
+    }
+
+    .flow-item {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      text-align: center;
+      min-width: 120px;
+      flex-shrink: 0;
+    }
+
+    .flow-item .fi-icon { font-size: 1.5rem; margin-bottom: 4px; }
+    .flow-item .fi-label { font-size: 0.8rem; font-weight: 600; }
+    .flow-item .fi-desc { font-size: 0.7rem; color: var(--text-muted); }
+
+    .flow-arrow {
+      font-size: 1.2rem;
+      color: var(--accent);
+      padding: 0 6px;
+      flex-shrink: 0;
+    }
+
+    /* Phase timeline */
+    .timeline {
+      position: relative;
+      margin: 32px 0;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 32px;
+      padding: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -27px;
+      top: 24px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--bg);
+    }
+
+    .tl-item.active::before {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .tl-phase {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .tl-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .tl-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    th {
+      color: var(--accent-light);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td { color: var(--text-muted); }
+
+    /* Checklist */
+    .checklist {
+      list-style: none;
+      margin: 16px 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      padding-left: 28px;
+      position: relative;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .checklist li::before {
+      content: '○';
+      position: absolute;
+      left: 0;
+      color: var(--accent-light);
+    }
+
+    .checklist li.done::before {
+      content: '●';
+      color: var(--green);
+    }
+
+    /* Alert box */
+    .alert {
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+
+    .alert-info {
+      background: rgba(108,92,231,0.1);
+      border: 1px solid rgba(108,92,231,0.3);
+      color: var(--accent-light);
+    }
+
+    .alert-warn {
+      background: rgba(253,203,110,0.1);
+      border: 1px solid rgba(253,203,110,0.3);
+      color: var(--orange);
+    }
+
+    .alert-success {
+      background: rgba(0,184,148,0.1);
+      border: 1px solid rgba(0,184,148,0.3);
+      color: var(--green-light);
+    }
+
+    /* Architecture diagram */
+    .arch-diagram {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin: 24px 0;
+      text-align: center;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--text-muted);
+    }
+
+    /* Accordion */
+    details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    summary {
+      padding: 16px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    summary:hover { background: var(--card-hover); }
+
+    details[open] summary {
+      border-bottom: 1px solid var(--border);
+    }
+
+    details .detail-content {
+      padding: 20px;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.4rem; }
+      .floor-num { width: 48px; font-size: 1.1rem; }
+      .floor-content { padding: 12px; }
+      .flow { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+      .card-grid { grid-template-columns: 1fr; }
+      .arch-diagram { font-size: 0.7rem; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="container">
+    <h1>AI活用 5階層インフラ構築ガイド</h1>
+    <p class="subtitle">Mac1台 / 追加費用ゼロ / Claude Codeサブスク範囲内で<br>スマホから一言でAIが全自動で動く環境を構築する</p>
+    <div class="badge-row">
+      <span class="badge badge-green">追加費用 ¥0</span>
+      <span class="badge badge-purple">3者協議設計</span>
+      <span class="badge badge-orange">Mac1台完結</span>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#hierarchy">5階層とは</a>
+      <a href="#current">現在地</a>
+      <a href="#architecture">全体構成</a>
+      <a href="#phase1">Phase 1: 3F</a>
+      <a href="#phase2">Phase 2: 4F基盤</a>
+      <a href="#phase3">Phase 3: 4F完成</a>
+      <a href="#phase4">Phase 4: 5F</a>
+      <a href="#security">セキュリティ</a>
+      <a href="#usage">使い方</a>
+      <a href="#ops">運用</a>
+    </div>
+  </div>
+</nav>
+
+<!-- 5階層の説明 -->
+<section id="hierarchy">
+  <div class="container">
+    <h2>AI活用の5階層構造とは</h2>
+
+    <p>
+      多くの人は「5階建てビルの1階と2階だけ」を使って、AIを最大限に活用していると思っている。
+      ブラウザでChatGPTを開き、プロンプトを入力し、返ってきた回答をコピペする。これが「普通の使い方」だ。
+    </p>
+    <p>
+      しかしAI活用には5つの階層があり、上の階に行くほど自動化が進み、人間の作業は限りなくゼロに近づく。
+      最終的には「スマホから一言送るだけ」で、AIが全自動で仕事を完了する世界になる。
+    </p>
+
+    <div class="building">
+      <div class="floor" style="border-color: rgba(253,203,110,0.5);">
+        <div class="floor-num" style="background: var(--floor5);">5F</div>
+        <div class="floor-content">
+          <div class="floor-title">スマホ一言 → 全自動</div>
+          <div class="floor-desc">人間は「スマホで一言送る」だけ。AIが処理し、結果が返ってくる。</div>
+        </div>
+        <span class="floor-status status-todo">これから</span>
+      </div>
+      <div class="floor" style="border-color: rgba(225,112,85,0.5);">
+        <div class="floor-num" style="background: var(--floor4);">4F</div>
+        <div class="floor-content">
+          <div class="floor-title">ゲートウェイ（入口の多様化）</div>
+          <div class="floor-desc">n8n等のワークフロー基盤。Webhook、LINE、iOSショートカットから起動。</div>
+        </div>
+        <span class="floor-status status-todo">これから</span>
+      </div>
+      <div class="floor" style="border-color: rgba(108,92,231,0.5);">
+        <div class="floor-num" style="background: var(--floor3);">3F</div>
+        <div class="floor-content">
+          <div class="floor-title">Skills / cron 自動実行</div>
+          <div class="floor-desc">ヘッドレス実行、定期タスク、スキルファイルで自動化。</div>
+        </div>
+        <span class="floor-status status-partial">部分的</span>
+      </div>
+      <div class="floor" style="border-color: rgba(9,132,227,0.5);">
+        <div class="floor-num" style="background: var(--floor2);">2F</div>
+        <div class="floor-content">
+          <div class="floor-title">Claude Code 処理・自動化</div>
+          <div class="floor-desc">CLI で対話。自律実行モード、複数エージェント連携。</div>
+        </div>
+        <span class="floor-status status-done">構築済</span>
+      </div>
+      <div class="floor" style="border-color: rgba(0,184,148,0.5);">
+        <div class="floor-num" style="background: var(--floor1);">1F</div>
+        <div class="floor-content">
+          <div class="floor-title">MCP / API 接続</div>
+          <div class="floor-desc">AIが外部ツール（Obsidian, Figma, Google Sheets等）と直接やり取り。</div>
+        </div>
+        <span class="floor-status status-done">構築済</span>
+      </div>
+    </div>
+
+    <h3>各階層の詳細</h3>
+
+    <details>
+      <summary>1F: MCP / API 接続</summary>
+      <div class="detail-content">
+        <p>AIが外部ツールと「直接」つながる層。Model Context Protocol（MCP）を使い、AIがFigmaのデザインを読み取ったり、Obsidianにノートを書いたり、Google Sheetsを操作できる。</p>
+        <p><strong>実装済みのMCPサーバー:</strong></p>
+        <ul class="checklist">
+          <li class="done">Figma（デザイン読み取り・コード生成）</li>
+          <li class="done">Obsidian（ノート読み書き・検索）</li>
+          <li class="done">Playwright（ブラウザ操作・スクリーンショット）</li>
+          <li class="done">Google Sheets（スプレッドシート操作）</li>
+          <li class="done">AI Discussion Bridge（GPT-5, Gemini連携）</li>
+          <li class="done">DALL-E（画像生成）</li>
+          <li class="done">n8n MCP（ワークフロー操作）</li>
+          <li class="done">Firecrawl（Webスクレイピング）</li>
+          <li class="done">Tavily（Web検索・リサーチ）</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>2F: Claude Code 処理・自動化</summary>
+      <div class="detail-content">
+        <p>Claude Code CLIを「自律実行モード」で運用し、人間の確認を最小限にする層。CLAUDE.mdに詳細なルールを定義し、AIが自律的に判断・実行する。</p>
+        <p><strong>実装済みの機能:</strong></p>
+        <ul class="checklist">
+          <li class="done">自律実行モード（確認不要な操作を定義）</li>
+          <li class="done">プロジェクト検索の自動化（デスクトップ構造に従って自動探索）</li>
+          <li class="done">Git自動化（commit → push → GitHub Pages公開）</li>
+          <li class="done">Obsidian開発ログ自動作成</li>
+          <li class="done">3者協議プロトコル（Claude + GPT-5 + Gemini）</li>
+          <li class="done">転売リサーチプロトコル</li>
+          <li class="done">時計データ追加プロトコル</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>3F: Skills / cron 自動実行 <span class="badge badge-orange" style="font-size:0.7rem; margin-left:8px;">整備中</span></summary>
+      <div class="detail-content">
+        <p>Claude Codeを「手で起動して対話する」のではなく、コマンド一つで仕事が完了する層。ヘッドレスモード（<code>claude -p</code>）で非対話実行し、launchdで定期実行する。</p>
+        <p><strong>整備内容:</strong></p>
+        <ul class="checklist">
+          <li>ヘッドレス実行ラッパースクリプト（run-claude.sh）</li>
+          <li>プロンプトテンプレート管理</li>
+          <li>実行ログの自動保存</li>
+          <li>実行回数カウンター（サブスク上限ガード）</li>
+          <li>既存プロトコルの独立Skills化</li>
+          <li>launchd定期実行（毎朝の市場チェック等）</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4F: ゲートウェイ <span class="badge badge-orange" style="font-size:0.7rem; margin-left:8px;">これから</span></summary>
+      <div class="detail-content">
+        <p>「入口」を多様化し、どこからでもAIを起動できるようにする層。n8nワークフローエンジンを中心に、Webhook、iOSショートカット、LINE Botからトリガーする。</p>
+        <p><strong>構築内容:</strong></p>
+        <ul class="checklist">
+          <li>n8nホスト実行（npm install -g n8n）</li>
+          <li>n8n → Claude Codeパイプライン</li>
+          <li>Webhook受信（HMAC署名認証付き）</li>
+          <li>iOSショートカット連携（ワンタップ実行）</li>
+          <li>LINE Bot連携（テキスト指示）</li>
+          <li>外出先アクセス（Cloudflare Tunnel）</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>5F: スマホ一言 → 全自動 <span class="badge badge-orange" style="font-size:0.7rem; margin-left:8px;">これから</span></summary>
+      <div class="detail-content">
+        <p>最終到達点。スマホから一言送るだけで、AIが全自動で処理し、結果をスマホに通知する。人間がやるのは「一言送る」だけ。</p>
+        <p><strong>統合内容:</strong></p>
+        <ul class="checklist">
+          <li>「○○リサーチ」→ 転売リサーチ自動実行 → Excel + LINE通知</li>
+          <li>「○○について協議」→ 3者協議自動実行 → サマリー通知</li>
+          <li>「市場チェック」ワンタップ → 定期+オンデマンド → 変動通知</li>
+          <li>CSVアップロード → 時計データ全自動パイプライン → 完了通知</li>
+          <li>「○○を修正して」→ Claude Code実行 → commit/push + 通知</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- 現在地 -->
+<section id="current">
+  <div class="container">
+    <h2>現在地の診断</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon" style="color:var(--floor1);">1F</div>
+        <h4>MCP/API接続</h4>
+        <p style="color:var(--green);">構築済 ✓</p>
+        <p>10以上のMCPサーバーを構成。Figma, Obsidian, Playwright, Google Sheets, AI Discussion Bridge等。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="color:var(--floor2);">2F</div>
+        <h4>Claude Code自動化</h4>
+        <p style="color:var(--green);">構築済 ✓</p>
+        <p>自律実行モード、3者協議、転売リサーチ、時計データ追加等のプロトコルを運用中。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="color:var(--floor3);">3F</div>
+        <h4>Skills/cron自動実行</h4>
+        <p style="color:var(--orange);">部分的</p>
+        <p>Skills（7つ）は構成済だが、ヘッドレス実行基盤・launchd定期実行はまだ。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="color:var(--floor4);">4F</div>
+        <h4>ゲートウェイ</h4>
+        <p style="color:var(--red);">未構築</p>
+        <p>n8n未導入。スマホからの起動手段なし。入口がCLI（ターミナル）のみ。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="color:var(--floor5);">5F</div>
+        <h4>全自動統合</h4>
+        <p style="color:var(--red);">未構築</p>
+        <p>スマホから一言で全自動実行、結果通知の仕組みなし。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 全体構成 -->
+<section id="architecture">
+  <div class="container">
+    <h2>全体アーキテクチャ</h2>
+
+    <p>3者協議（Claude + GPT-5 + Gemini）の合意に基づく設計。全コンポーネント無料。</p>
+
+    <h3>データフロー</h3>
+    <div class="flow">
+      <div class="flow-item">
+        <div class="fi-icon">📱</div>
+        <div class="fi-label">スマホ</div>
+        <div class="fi-desc">iOS Shortcuts<br>LINE Bot</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item" style="border-color: var(--accent);">
+        <div class="fi-icon">🔀</div>
+        <div class="fi-label">n8n</div>
+        <div class="fi-desc">ワークフロー<br>Webhook受信</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item" style="border-color: var(--green);">
+        <div class="fi-icon">🤖</div>
+        <div class="fi-label">Claude Code</div>
+        <div class="fi-desc">ヘッドレス実行<br>run-claude.sh</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">🔌</div>
+        <div class="fi-label">MCP</div>
+        <div class="fi-desc">外部ツール<br>接続</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">📨</div>
+        <div class="fi-label">通知</div>
+        <div class="fi-desc">LINE返信<br>macOS通知</div>
+      </div>
+    </div>
+
+    <h3>システム構成図</h3>
+    <div class="arch-diagram">
+┌──────────────────────────────────────────────────────────────┐
+│                         <span style="color:var(--floor5)">5F: スマホ一言 → 全自動</span>                     │
+│  ┌──────────┐   ┌──────────┐   ┌──────────────────────┐     │
+│  │ iOS      │   │ LINE     │   │ 結果通知             │     │
+│  │ Shortcuts│   │ Bot      │   │ (LINE / macOS通知)   │     │
+│  └────┬─────┘   └────┬─────┘   └──────────▲───────────┘     │
+│───────┼──────────────┼────────────────────┼─────────────────│
+│       │    <span style="color:var(--floor4)">4F: ゲートウェイ</span>              │                 │
+│       ▼              ▼                    │                 │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  <span style="color:var(--accent-light)">n8n (localhost:5678)</span>                                │    │
+│  │  ├── Webhook (HMAC署名認証)                         │    │
+│  │  ├── Cron Trigger                                   │    │
+│  │  ├── 実行回数チェック                                │    │
+│  │  └── Execute Command → run-claude.sh                │    │
+│  └────────────────────┬────────────────────────────────┘    │
+│───────────────────────┼─────────────────────────────────────│
+│       <span style="color:var(--floor3)">3F: Skills / cron</span>  │                                     │
+│                       ▼                                     │
+│  ┌────────────────────────────────────────────────────┐     │
+│  │  <span style="color:var(--green-light)">run-claude.sh (ラッパースクリプト)</span>                   │     │
+│  │  ├── 実行ログ保存                                   │     │
+│  │  ├── タイムアウト管理 (5min)                         │     │
+│  │  └── テンプレート読み込み                            │     │
+│  └────────────────────┬───────────────────────────────┘     │
+│───────────────────────┼─────────────────────────────────────│
+│       <span style="color:var(--floor2)">2F: Claude Code</span>   │                                     │
+│                       ▼                                     │
+│  ┌────────────────────────────────────────────────────┐     │
+│  │  <span style="color:var(--blue)">claude -p "プロンプト" --allowedTools ...</span>             │     │
+│  │  ├── 自律実行モード                                  │     │
+│  │  ├── Skills (.claude/skills/)                        │     │
+│  │  └── CLAUDE.md ルール                                │     │
+│  └────────────────────┬───────────────────────────────┘     │
+│───────────────────────┼─────────────────────────────────────│
+│       <span style="color:var(--floor1)">1F: MCP / API</span>     │                                     │
+│                       ▼                                     │
+│  ┌───────┐ ┌────────┐ ┌───────────┐ ┌──────┐ ┌──────────┐ │
+│  │Obsidian│ │ Figma  │ │  Google   │ │Sheets│ │Playwright│ │
+│  │       │ │        │ │  AI Disc. │ │      │ │          │ │
+│  └───────┘ └────────┘ └───────────┘ └──────┘ └──────────┘ │
+└──────────────────────────────────────────────────────────────┘
+    </div>
+
+    <h3>技術スタック（すべて無料）</h3>
+    <table>
+      <thead>
+        <tr><th>コンポーネント</th><th>技術</th><th>費用</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>AI処理</td><td>Claude Code CLI（サブスク内）</td><td>¥0</td></tr>
+        <tr><td>ワークフロー</td><td>n8n ホスト実行（npm）</td><td>¥0</td></tr>
+        <tr><td>定期実行</td><td>macOS launchd</td><td>¥0</td></tr>
+        <tr><td>スマホ入口</td><td>iOS ショートカット</td><td>¥0</td></tr>
+        <tr><td>チャット入口</td><td>LINE Messaging API（無料枠）</td><td>¥0</td></tr>
+        <tr><td>外部アクセス</td><td>Cloudflare Tunnel / Tailscale</td><td>¥0</td></tr>
+        <tr><td>通知</td><td>LINE返信 / macOS通知</td><td>¥0</td></tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-info">
+      <strong>3者協議の重要決定:</strong> n8nはDockerではなくホスト実行（npm install -g n8n）を採用。<br>
+      理由: ホスト上のClaude Code CLIを直接呼べるため、Docker経由の複雑さとリスクを回避。
+    </div>
+  </div>
+</section>
+
+<!-- Phase 1 -->
+<section id="phase1">
+  <div class="container">
+    <h2 style="color:var(--floor3);">Phase 1: 3F完成 — Skills/自動化基盤</h2>
+    <p>Claude Codeを「手動で起動して対話する」から「コマンド1つで仕事が完了する」へ。</p>
+
+    <h3>1.1 ヘッドレス実行基盤</h3>
+    <p>Claude Codeのヘッドレスモード（<code>claude -p "プロンプト"</code>）で非対話実行する仕組みを構築する。</p>
+
+    <h4>ディレクトリ構成</h4>
+    <div class="code-block">
+<span class="comment"># ~/ai-scripts/ の構成</span>
+~/ai-scripts/
+├── run-claude.sh          <span class="comment"># 汎用ラッパー</span>
+├── templates/
+│   ├── resale-research.md  <span class="comment"># 転売リサーチ用</span>
+│   ├── market-check.md     <span class="comment"># 市場データチェック用</span>
+│   ├── ai-discussion.md    <span class="comment"># 3者協議用</span>
+│   └── watch-data-add.md   <span class="comment"># 時計データ追加用</span>
+├── logs/                   <span class="comment"># 実行ログ</span>
+└── counter.txt             <span class="comment"># 日次実行回数カウンター</span>
+    </div>
+
+    <h4>run-claude.sh の仕組み</h4>
+    <div class="code-block">
+<span class="comment">#!/bin/bash</span>
+<span class="comment"># run-claude.sh - Claude Code ヘッドレス実行ラッパー</span>
+<span class="comment">#</span>
+<span class="comment"># 主な機能:</span>
+<span class="comment">#   1. 実行回数カウント（1日10回ガード）</span>
+<span class="comment">#   2. タイムアウト管理（デフォルト5分）</span>
+<span class="comment">#   3. 実行ログの自動保存</span>
+<span class="comment">#   4. エラーハンドリングと通知</span>
+<span class="comment">#   5. テンプレートからのプロンプト読み込み</span>
+<span class="comment">#</span>
+<span class="comment"># 使い方:</span>
+<span class="cmd">./run-claude.sh</span> <span class="str">"市場データをチェックして"</span>
+<span class="cmd">./run-claude.sh</span> <span class="key">--template</span> market-check
+<span class="cmd">./run-claude.sh</span> <span class="key">--template</span> resale-research <span class="key">--timeout</span> 600
+    </div>
+
+    <h3>1.2 既存プロトコルのSkills化</h3>
+    <p>CLAUDE.mdに埋め込んでいるプロトコルを、独立したSkillsとして切り出す。</p>
+
+    <table>
+      <thead>
+        <tr><th>プロトコル</th><th>現状</th><th>整理先</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>転売リサーチ</td><td style="color:var(--green)">Skills化済 ✓</td><td>skills/resale-research/</td></tr>
+        <tr><td>3者協議</td><td style="color:var(--orange)">CLAUDE.md内</td><td>skills/ai-discussion/SKILL.md</td></tr>
+        <tr><td>時計データ追加</td><td style="color:var(--orange)">CLAUDE.md内</td><td>skills/watch-data/SKILL.md</td></tr>
+        <tr><td>GitHub Pages公開</td><td style="color:var(--orange)">CLAUDE.md内</td><td>skills/github-pages/SKILL.md</td></tr>
+        <tr><td>開発ログ作成</td><td style="color:var(--orange)">CLAUDE.md内</td><td>skills/dev-log/SKILL.md</td></tr>
+      </tbody>
+    </table>
+
+    <h3>1.3 launchdで定期実行</h3>
+    <p>Macのlaunchd（cronの後継）で定期タスクを設定する。</p>
+
+    <h4>plistファイルの例</h4>
+    <div class="code-block">
+<span class="comment">&lt;!-- ~/Library/LaunchAgents/com.ai.market-check.plist --&gt;</span>
+&lt;<span class="key">plist</span>&gt;
+  &lt;<span class="key">dict</span>&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;<span class="str">com.ai.market-check</span>&lt;/string&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+      &lt;string&gt;<span class="str">/Users/naokijodan/ai-scripts/run-claude.sh</span>&lt;/string&gt;
+      &lt;string&gt;<span class="str">--template</span>&lt;/string&gt;
+      &lt;string&gt;<span class="str">market-check</span>&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;StartCalendarInterval&lt;/key&gt;
+    &lt;dict&gt;
+      &lt;key&gt;Hour&lt;/key&gt;&lt;integer&gt;<span class="str">9</span>&lt;/integer&gt;
+      &lt;key&gt;Minute&lt;/key&gt;&lt;integer&gt;<span class="str">0</span>&lt;/integer&gt;
+    &lt;/dict&gt;
+  &lt;/dict&gt;
+&lt;/<span class="key">plist</span>&gt;
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>注意:</strong> launchdのジョブは <code>launchctl load</code> で登録する。<br>
+      Mac再起動後も自動的に有効になる（RunAtLoad設定）。
+    </div>
+  </div>
+</section>
+
+<!-- Phase 2 -->
+<section id="phase2">
+  <div class="container">
+    <h2 style="color:var(--floor4);">Phase 2: 4F基盤 — n8nゲートウェイ</h2>
+    <p>「トリガー → 自動でClaude Codeが動く」仕組みを作る。</p>
+
+    <h3>2.1 n8nホスト構築</h3>
+
+    <div class="alert alert-info">
+      <strong>3者協議の決定:</strong> n8nはDockerではなくホスト実行を採用。<br>
+      ホスト上のClaude Code CLIを直接呼べるため、構成がシンプルで安定する。
+    </div>
+
+    <h4>インストール手順</h4>
+    <div class="code-block">
+<span class="comment"># n8n をグローバルインストール</span>
+<span class="cmd">npm install -g n8n</span>
+
+<span class="comment"># 起動確認</span>
+<span class="cmd">n8n start</span>
+<span class="comment"># → http://localhost:5678 でアクセス</span>
+
+<span class="comment"># launchd で自動起動設定（Mac起動時に自動でn8nが立ち上がる）</span>
+<span class="comment"># ~/Library/LaunchAgents/com.n8n.server.plist を作成</span>
+    </div>
+
+    <h3>2.2 n8n → Claude Code パイプライン</h3>
+
+    <div class="flow">
+      <div class="flow-item">
+        <div class="fi-icon">🔔</div>
+        <div class="fi-label">トリガー</div>
+        <div class="fi-desc">Webhook<br>Cron<br>ファイル監視</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">🔐</div>
+        <div class="fi-label">認証チェック</div>
+        <div class="fi-desc">HMAC署名<br>検証</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">🔢</div>
+        <div class="fi-label">回数チェック</div>
+        <div class="fi-desc">日次上限<br>10回</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item" style="border-color:var(--green);">
+        <div class="fi-icon">🤖</div>
+        <div class="fi-label">Claude Code</div>
+        <div class="fi-desc">run-claude.sh<br>実行</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">📤</div>
+        <div class="fi-label">結果処理</div>
+        <div class="fi-desc">パース<br>整形</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">📱</div>
+        <div class="fi-label">通知</div>
+        <div class="fi-desc">LINE<br>macOS</div>
+      </div>
+    </div>
+
+    <h3>2.3 トリガー型タスク</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📁</div>
+        <h4>ファイル監視トリガー</h4>
+        <p>CSVファイルの更新を検知 → 自動でデータ処理 → Git push</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h4>Webhookトリガー</h4>
+        <p>HTTP POST → n8n → Claude Code。HMAC署名で認証。スマホ連携の基盤。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏰</div>
+        <h4>条件付きトリガー</h4>
+        <p>定期チェック → 条件合致時のみAI起動。不要な実行を抑制。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Phase 3 -->
+<section id="phase3">
+  <div class="container">
+    <h2 style="color:var(--floor4);">Phase 3: 4F完成 — スマホ入口</h2>
+    <p>スマホから一言送るだけでn8nのワークフローが起動する。</p>
+
+    <h3>3.1 iOSショートカット連携</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🏪</div>
+        <h4>「市場チェック」</h4>
+        <p>ワンタップで実行。n8n Webhookにリクエスト送信。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h4>「リサーチ開始」</h4>
+        <p>テキスト入力 → 転売リサーチ実行。結果をLINEで受信。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h4>「今日のサマリー」</h4>
+        <p>ワンタップで日次レポート生成。Obsidianにも保存。</p>
+      </div>
+    </div>
+
+    <h4>iOSショートカットの設定方法</h4>
+    <div class="code-block">
+<span class="comment"># iOSショートカットの基本構成:</span>
+<span class="comment">#</span>
+<span class="comment"># 1. 「URL の内容を取得」アクション</span>
+<span class="comment">#    - URL: https://your-tunnel.trycloudflare.com/webhook/task-name</span>
+<span class="comment">#    - Method: POST</span>
+<span class="comment">#    - Headers:</span>
+<span class="comment">#      X-Signature: [HMAC-SHA256署名]</span>
+<span class="comment">#      Content-Type: application/json</span>
+<span class="comment">#    - Body: {"task": "market-check", "params": {}}</span>
+<span class="comment">#</span>
+<span class="comment"># 2. 結果は LINE Bot 経由で通知される</span>
+    </div>
+
+    <h3>3.2 LINE Bot連携</h3>
+    <p>自然言語でのテキスト指示が必要な場合に使用。無料枠200通/月。</p>
+
+    <div class="flow">
+      <div class="flow-item">
+        <div class="fi-icon">💬</div>
+        <div class="fi-label">LINE</div>
+        <div class="fi-desc">「○○リサーチ」<br>と送信</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">🔀</div>
+        <div class="fi-label">n8n</div>
+        <div class="fi-desc">メッセージ解析<br>タスク判定</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item" style="border-color:var(--green);">
+        <div class="fi-icon">🤖</div>
+        <div class="fi-label">Claude Code</div>
+        <div class="fi-desc">リサーチ実行</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-item">
+        <div class="fi-icon">📨</div>
+        <div class="fi-label">LINE返信</div>
+        <div class="fi-desc">結果を返信</div>
+      </div>
+    </div>
+
+    <h3>3.3 外部アクセス</h3>
+
+    <table>
+      <thead>
+        <tr><th>場所</th><th>アクセス方法</th><th>設定</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>自宅Wi-Fi</td><td>ローカルIP:5678</td><td>設定不要</td></tr>
+        <tr><td>外出先</td><td>Cloudflare Tunnel</td><td>cloudflared tunnelコマンド</td></tr>
+        <tr><td>別デバイス</td><td>Tailscale</td><td>VPNメッシュ（無料）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Phase 4 -->
+<section id="phase4">
+  <div class="container">
+    <h2 style="color:var(--floor5);">Phase 4: 5F到達 — 全自動統合</h2>
+    <p>「スマホから一言」→「AI処理」→「結果通知」が完全自動で回る。</p>
+
+    <h3>統合タスク一覧</h3>
+
+    <table>
+      <thead>
+        <tr><th>タスク</th><th>スマホから</th><th>自動処理</th><th>結果通知</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>転売リサーチ</td>
+          <td>「○○リサーチ」</td>
+          <td>Claude Code + 3者協議</td>
+          <td>Excel + LINE</td>
+        </tr>
+        <tr>
+          <td>市場チェック</td>
+          <td>ワンタップ</td>
+          <td>eBayデータ取得 + 分析</td>
+          <td>変動時のみLINE</td>
+        </tr>
+        <tr>
+          <td>3者協議</td>
+          <td>「○○について協議」</td>
+          <td>GPT-5 + Gemini + Claude</td>
+          <td>サマリーをLINE</td>
+        </tr>
+        <tr>
+          <td>時計データ追加</td>
+          <td>CSVアップロード</td>
+          <td>マージ + タブ再生成 + push</td>
+          <td>完了通知</td>
+        </tr>
+        <tr>
+          <td>開発タスク</td>
+          <td>「○○を修正」</td>
+          <td>Claude Code実行</td>
+          <td>commit/push + 通知</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>完成後の日常イメージ</h3>
+
+    <div class="card-grid">
+      <div class="card" style="border-color: rgba(253,203,110,0.3);">
+        <div class="card-icon">🌅</div>
+        <h4>朝（自動）</h4>
+        <p>launchdが市場チェックを自動実行。変動があればLINEに通知が届く。何もなければ通知なし。</p>
+      </div>
+      <div class="card" style="border-color: rgba(253,203,110,0.3);">
+        <div class="card-icon">📱</div>
+        <h4>移動中（スマホ）</h4>
+        <p>LINEで「セイコーのダイバーズリサーチ」と送信。移動中にAIがリサーチし、結果がLINEに届く。</p>
+      </div>
+      <div class="card" style="border-color: rgba(253,203,110,0.3);">
+        <div class="card-icon">💻</div>
+        <h4>デスクで（ターミナル）</h4>
+        <p>従来通りClaude Codeを直接使う。複雑なタスクはこちらで。</p>
+      </div>
+      <div class="card" style="border-color: rgba(253,203,110,0.3);">
+        <div class="card-icon">🌙</div>
+        <h4>夜（自動）</h4>
+        <p>日次サマリーが自動生成され、Obsidianに保存。翌朝確認するだけ。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- セキュリティ -->
+<section id="security">
+  <div class="container">
+    <h2>セキュリティ設計</h2>
+    <p>3者協議で「セキュリティが最大の勝負所」と合意。以下は必須要件。</p>
+
+    <h3>Webhook認証（HMAC署名）</h3>
+    <div class="code-block">
+<span class="comment"># HMAC-SHA256 署名の仕組み</span>
+<span class="comment">#</span>
+<span class="comment"># 1. リクエスト送信側（iOSショートカット/LINE Bot）</span>
+<span class="comment">#    - ペイロードをシークレットキーでHMAC-SHA256署名</span>
+<span class="comment">#    - 署名をX-Signatureヘッダーに付与</span>
+<span class="comment">#</span>
+<span class="comment"># 2. n8n受信側</span>
+<span class="comment">#    - 同じシークレットキーで署名を検証</span>
+<span class="comment">#    - 不一致なら即座にリクエストを拒否</span>
+<span class="comment">#</span>
+<span class="comment"># これにより:</span>
+<span class="comment">#   - URLが漏洩しても第三者は実行できない</span>
+<span class="comment">#   - リクエストの改ざんを検知できる</span>
+    </div>
+
+    <h3>セキュリティ対策一覧</h3>
+
+    <table>
+      <thead>
+        <tr><th>脅威</th><th>対策</th><th>実装場所</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Webhook不正呼び出し</td><td>HMAC署名 + URLランダム化</td><td>n8n</td></tr>
+        <tr><td>DDoS / ブルートフォース</td><td>Rate Limit / WAF</td><td>Cloudflare</td></tr>
+        <tr><td>重要タスクの誤実行</td><td>承認フロー（通知→確認→実行）</td><td>n8n</td></tr>
+        <tr><td>サブスク上限超過</td><td>実行回数カウンター（日10回）</td><td>run-claude.sh</td></tr>
+        <tr><td>通信の盗聴</td><td>TLS（Cloudflare Tunnel標準）</td><td>Cloudflare</td></tr>
+        <tr><td>シークレット漏洩</td><td>環境変数管理、.envファイル</td><td>ホスト</td></tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-warn">
+      <strong>3者協議の合意:</strong> 「重要タスク（本番デプロイ、大量API呼び出し等）は即実行ではなく、承認フローを必ず挟む」
+    </div>
+  </div>
+</section>
+
+<!-- 使い方ガイド -->
+<section id="usage">
+  <div class="container">
+    <h2>使い方ガイド</h2>
+
+    <h3>Phase 1 完成後の使い方</h3>
+
+    <details>
+      <summary>ターミナルからヘッドレス実行</summary>
+      <div class="detail-content">
+        <div class="code-block">
+<span class="comment"># 直接プロンプトを指定</span>
+<span class="cmd">~/ai-scripts/run-claude.sh</span> <span class="str">"eBayの出品状況をチェックして変動があれば報告して"</span>
+
+<span class="comment"># テンプレートを使用</span>
+<span class="cmd">~/ai-scripts/run-claude.sh</span> <span class="key">--template</span> market-check
+
+<span class="comment"># タイムアウトを指定（秒）</span>
+<span class="cmd">~/ai-scripts/run-claude.sh</span> <span class="key">--template</span> resale-research <span class="key">--timeout</span> 600
+
+<span class="comment"># 実行ログ確認</span>
+<span class="cmd">ls</span> ~/ai-scripts/logs/
+
+<span class="comment"># 今日の実行回数確認</span>
+<span class="cmd">cat</span> ~/ai-scripts/counter.txt
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>launchd定期実行の管理</summary>
+      <div class="detail-content">
+        <div class="code-block">
+<span class="comment"># ジョブ一覧確認</span>
+<span class="cmd">launchctl list</span> | grep com.ai
+
+<span class="comment"># ジョブ登録</span>
+<span class="cmd">launchctl load</span> ~/Library/LaunchAgents/com.ai.market-check.plist
+
+<span class="comment"># ジョブ解除</span>
+<span class="cmd">launchctl unload</span> ~/Library/LaunchAgents/com.ai.market-check.plist
+
+<span class="comment"># 即時実行（テスト用）</span>
+<span class="cmd">launchctl start</span> com.ai.market-check
+
+<span class="comment"># ステータス確認</span>
+<span class="cmd">launchctl print gui/$(id -u)/com.ai.market-check</span>
+        </div>
+      </div>
+    </details>
+
+    <h3>Phase 2-3 完成後の使い方</h3>
+
+    <details>
+      <summary>n8n管理</summary>
+      <div class="detail-content">
+        <div class="code-block">
+<span class="comment"># n8n起動</span>
+<span class="cmd">n8n start</span>
+<span class="comment"># → ブラウザで http://localhost:5678 を開く</span>
+
+<span class="comment"># バックグラウンド起動（launchdで自動化済みなら不要）</span>
+<span class="cmd">nohup n8n start &amp;</span>
+
+<span class="comment"># Cloudflare Tunnelで外部公開</span>
+<span class="cmd">cloudflared tunnel --url</span> http://localhost:5678
+        </div>
+        <p>n8nのGUI（http://localhost:5678）でワークフローを視覚的に確認・編集できる。</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>iOSショートカットの作成方法</summary>
+      <div class="detail-content">
+        <p><strong>手順:</strong></p>
+        <ol style="color:var(--text-muted); padding-left: 20px;">
+          <li style="margin-bottom:8px;">iPhoneで「ショートカット」アプリを開く</li>
+          <li style="margin-bottom:8px;">「+」で新規ショートカット作成</li>
+          <li style="margin-bottom:8px;">「アクションを追加」→「URLの内容を取得」を選択</li>
+          <li style="margin-bottom:8px;">URL: n8nのWebhookエンドポイント</li>
+          <li style="margin-bottom:8px;">Method: POST</li>
+          <li style="margin-bottom:8px;">Headers: X-Signature に HMAC署名を設定</li>
+          <li style="margin-bottom:8px;">Body: JSON形式でタスク名とパラメータ</li>
+          <li style="margin-bottom:8px;">ホーム画面に追加 → ワンタップで実行可能</li>
+        </ol>
+        <div class="alert alert-info">
+          <strong>ヒント:</strong> Siri に「市場チェック」と言うだけでもショートカットを実行できる。
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>LINE Botの使い方</summary>
+      <div class="detail-content">
+        <p><strong>基本コマンド（Phase 4完成後）:</strong></p>
+        <table>
+          <thead>
+            <tr><th>送信テキスト</th><th>実行されるタスク</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>「○○リサーチ」</td><td>転売リサーチ実行 → Excel + 結果返信</td></tr>
+            <tr><td>「○○について協議」</td><td>3者協議実行 → サマリー返信</td></tr>
+            <tr><td>「市場チェック」</td><td>市場データ確認 → 変動レポート返信</td></tr>
+            <tr><td>「ステータス」</td><td>システム状態確認 → 稼働状況返信</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <h3>トラブルシューティング</h3>
+
+    <details>
+      <summary>よくある問題と対処法</summary>
+      <div class="detail-content">
+        <h4>Claude Codeが実行されない</h4>
+        <ul class="checklist">
+          <li>実行回数上限（日10回）に達していないか確認: <code>cat ~/ai-scripts/counter.txt</code></li>
+          <li>Claude Code CLIのパスが通っているか確認: <code>which claude</code></li>
+          <li>サブスクリプションの状態を確認</li>
+        </ul>
+
+        <h4>n8nに接続できない</h4>
+        <ul class="checklist">
+          <li>n8nが起動しているか: <code>lsof -i :5678</code></li>
+          <li>ファイアウォールの設定確認</li>
+          <li>外出先の場合: Cloudflare Tunnelが起動しているか確認</li>
+        </ul>
+
+        <h4>Macがスリープしてタスクが止まる</h4>
+        <ul class="checklist">
+          <li>システム設定 → Energy Saver → 「ネットワーク接続でスリープ解除」ON</li>
+          <li><code>caffeinate -s</code> で一時的にスリープ防止</li>
+          <li>launchdジョブに <code>KeepAlive</code> 設定追加</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- 運用 -->
+<section id="ops">
+  <div class="container">
+    <h2>運用ガイド</h2>
+
+    <h3>リスクと対策</h3>
+
+    <table>
+      <thead>
+        <tr><th>リスク</th><th>対策</th><th>優先度</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Macスリープでタスク停止</td><td>Energy Saver + caffeinate</td><td style="color:var(--red)">高</td></tr>
+        <tr><td>サブスク上限超過</td><td>実行回数カウンター（日10回）</td><td style="color:var(--red)">高</td></tr>
+        <tr><td>タスクのサイレント失敗</td><td>失敗時LINE即時通知</td><td style="color:var(--red)">高</td></tr>
+        <tr><td>Webhook不正アクセス</td><td>HMAC署名 + Cloudflare WAF</td><td style="color:var(--red)">高</td></tr>
+        <tr><td>n8nクラッシュ</td><td>launchd KeepAlive自動復旧</td><td style="color:var(--orange)">中</td></tr>
+        <tr><td>Mac再起動後の復旧</td><td>launchd RunAtLoad設定</td><td style="color:var(--orange)">中</td></tr>
+        <tr><td>リソース逼迫</td><td>同時実行数制限 + モニタリング</td><td>低</td></tr>
+      </tbody>
+    </table>
+
+    <h3>実装ロードマップ</h3>
+
+    <div class="timeline">
+      <div class="tl-item active">
+        <div class="tl-phase" style="color:var(--floor3);">Phase 1 — 3F完成</div>
+        <div class="tl-title">Skills/自動化基盤の整備</div>
+        <div class="tl-desc">
+          ヘッドレス実行ラッパー作成 → プロンプトテンプレート整備 → 実行回数カウンター → Skills化 → launchd定期実行設定
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase" style="color:var(--floor4);">Phase 2 — 4F基盤</div>
+        <div class="tl-title">n8nゲートウェイ構築</div>
+        <div class="tl-desc">
+          n8nホストインストール → Claude Code パイプライン → Webhookセキュリティ → トリガー型タスク実装
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase" style="color:var(--floor4);">Phase 3 — 4F完成</div>
+        <div class="tl-title">スマホ入口の構築</div>
+        <div class="tl-desc">
+          iOSショートカット連携 → LINE Bot構築 → Cloudflare Tunnel設定 → エンドツーエンドテスト
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase" style="color:var(--floor5);">Phase 4 — 5F到達</div>
+        <div class="tl-title">全自動統合</div>
+        <div class="tl-desc">
+          全プロトコル統合 → 通知フロー整備 → エラー監視 → 運用安定化
+        </div>
+      </div>
+    </div>
+
+    <h3>日次チェックリスト</h3>
+    <ul class="checklist">
+      <li>n8n が稼働しているか（localhost:5678）</li>
+      <li>今日の実行回数（counter.txt）</li>
+      <li>失敗タスクがないか（n8n 実行履歴）</li>
+      <li>ディスク容量（ログの肥大化チェック）</li>
+    </ul>
+
+    <h3>週次チェックリスト</h3>
+    <ul class="checklist">
+      <li>古いログの削除（30日以上前）</li>
+      <li>n8nのアップデート確認</li>
+      <li>Claude Code CLIのアップデート確認</li>
+      <li>Cloudflare Tunnelの接続状態確認</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 3者協議サマリー -->
+<section id="discussion">
+  <div class="container">
+    <h2>3者協議サマリー</h2>
+    <p>この設計は Claude + GPT-5 + Gemini の3者協議（3ラウンド）に基づいている。</p>
+
+    <div class="card-grid">
+      <div class="card" style="border-color: rgba(108,92,231,0.5);">
+        <div class="card-icon">🟣</div>
+        <h4>Claude</h4>
+        <p>n8nホスト実行を提案。Docker内からホストCLIを呼ぶのは複雑。最小構成でシンプルに。</p>
+      </div>
+      <div class="card" style="border-color: rgba(0,184,148,0.5);">
+        <div class="card-icon">🟢</div>
+        <h4>GPT-5</h4>
+        <p>セキュリティ最優先を主張。HMAC署名、承認フロー、失敗検知の3点が成否を分ける。</p>
+      </div>
+      <div class="card" style="border-color: rgba(116,185,255,0.5);">
+        <div class="card-icon">🔵</div>
+        <h4>Gemini</h4>
+        <p>段階的アプローチを支持。運用の持続可能性が最重要。サイレント失敗の防止が必須。</p>
+      </div>
+    </div>
+
+    <h3>全員一致の結論</h3>
+    <div class="alert alert-success">
+      <strong>設計は合理的で成功確率が高い。</strong><br>
+      鍵は「Webhook認証」「n8n実行場所の単純化」「運用の失敗検知」の3点。<br>
+      Phase 1のヘッドレス実行基盤を最小構成で固めてから、段階的に拡張する。
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>AI活用 5階層インフラ構築ガイド</p>
+    <p>3者協議設計 | Mac1台完結 | 追加費用 ¥0</p>
+    <p style="margin-top: 12px; font-size: 0.8rem;">
+      参考: <a href="https://note.com/akira_papa_ai/n/n0c6f7e35a6f1" style="color:var(--accent-light);" target="_blank">あきらパパ「AI活用の5階層構造」</a>
+    </p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #555;">Generated: 2026-02-22</p>
+  </div>
+</footer>
+
+</body>
+</html>
