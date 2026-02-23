@@ -509,9 +509,9 @@
 <header class="hero">
   <div class="container">
     <h1>AI活用 5階層インフラ構築ガイド</h1>
-    <p class="subtitle">Mac1台 / 追加費用ゼロ / Claude Codeサブスク範囲内で<br>スマホから一言でAIが全自動で動く環境を構築する</p>
+    <p class="subtitle">Mac1台 / スマホからAIが全自動で動く環境を構築<br>SSH・リモートデスクトップでMacを完全遠隔操作</p>
     <div class="badge-row">
-      <span class="badge badge-green">追加費用 ¥0</span>
+      <span class="badge badge-green">全5階層 構築完了</span>
       <span class="badge badge-purple">3者協議設計</span>
       <span class="badge badge-orange">Mac1台完結</span>
     </div>
@@ -529,6 +529,7 @@
       <a href="#phase2">Phase 2: 4F基盤</a>
       <a href="#phase3">Phase 3: 4F完成</a>
       <a href="#phase4">Phase 4: 5F</a>
+      <a href="#remote">遠隔操作</a>
       <a href="#security">セキュリティ</a>
       <a href="#usage">使い方</a>
       <a href="#ops">運用</a>
@@ -554,18 +555,18 @@
       <div class="floor" style="border-color: rgba(253,203,110,0.5);">
         <div class="floor-num" style="background: var(--floor5);">5F</div>
         <div class="floor-content">
-          <div class="floor-title">スマホ一言 → 全自動</div>
-          <div class="floor-desc">人間は「スマホで一言送る」だけ。AIが処理し、結果が返ってくる。</div>
+          <div class="floor-title">スマホ → 全自動 + 遠隔操作</div>
+          <div class="floor-desc">LINE一言指示、SSH直接操作、リモートデスクトップの3手段でMacを完全制御。</div>
         </div>
-        <span class="floor-status status-todo">これから</span>
+        <span class="floor-status status-done">構築済</span>
       </div>
       <div class="floor" style="border-color: rgba(225,112,85,0.5);">
         <div class="floor-num" style="background: var(--floor4);">4F</div>
         <div class="floor-content">
           <div class="floor-title">ゲートウェイ（入口の多様化）</div>
-          <div class="floor-desc">n8n等のワークフロー基盤。Webhook、LINE、iOSショートカットから起動。</div>
+          <div class="floor-desc">n8n + Webhook + LINE Bot + Cloudflare Tunnel。スマホからの遠隔操作も。</div>
         </div>
-        <span class="floor-status status-todo">これから</span>
+        <span class="floor-status status-done">構築済</span>
       </div>
       <div class="floor" style="border-color: rgba(108,92,231,0.5);">
         <div class="floor-num" style="background: var(--floor3);">3F</div>
@@ -573,7 +574,7 @@
           <div class="floor-title">Skills / cron 自動実行</div>
           <div class="floor-desc">ヘッドレス実行、定期タスク、スキルファイルで自動化。</div>
         </div>
-        <span class="floor-status status-partial">部分的</span>
+        <span class="floor-status status-done">構築済</span>
       </div>
       <div class="floor" style="border-color: rgba(9,132,227,0.5);">
         <div class="floor-num" style="background: var(--floor2);">2F</div>
@@ -632,48 +633,56 @@
     </details>
 
     <details>
-      <summary>3F: Skills / cron 自動実行 <span class="badge badge-orange" style="font-size:0.7rem; margin-left:8px;">整備中</span></summary>
+      <summary>3F: Skills / cron 自動実行 <span class="badge badge-green" style="font-size:0.7rem; margin-left:8px;">構築済</span></summary>
       <div class="detail-content">
         <p>Claude Codeを「手で起動して対話する」のではなく、コマンド一つで仕事が完了する層。ヘッドレスモード（<code>claude -p</code>）で非対話実行し、launchdで定期実行する。</p>
-        <p><strong>整備内容:</strong></p>
+        <p><strong>実装済みの機能:</strong></p>
         <ul class="checklist">
-          <li>ヘッドレス実行ラッパースクリプト（run-claude.sh）</li>
-          <li>プロンプトテンプレート管理</li>
-          <li>実行ログの自動保存</li>
-          <li>実行回数カウンター（サブスク上限ガード）</li>
-          <li>既存プロトコルの独立Skills化</li>
-          <li>launchd定期実行（毎朝の市場チェック等）</li>
+          <li class="done">ヘッドレス実行ラッパースクリプト（run-claude.sh）</li>
+          <li class="done">プロンプトテンプレート管理（templates/ディレクトリ）</li>
+          <li class="done">実行ログの自動保存（logs/ディレクトリ）</li>
+          <li class="done">実行回数カウンター（日10回ガード）</li>
+          <li class="done">Anthropic API Key管理（ヘッドレス実行用）</li>
+          <li class="done">launchd定期実行（n8n, Cloudflare Tunnel, Tunnel Watcher）</li>
+          <li class="done">ヘルスチェックスクリプト（health-check.sh）</li>
         </ul>
       </div>
     </details>
 
     <details>
-      <summary>4F: ゲートウェイ <span class="badge badge-orange" style="font-size:0.7rem; margin-left:8px;">これから</span></summary>
+      <summary>4F: ゲートウェイ <span class="badge badge-green" style="font-size:0.7rem; margin-left:8px;">構築済</span></summary>
       <div class="detail-content">
-        <p>「入口」を多様化し、どこからでもAIを起動できるようにする層。n8nワークフローエンジンを中心に、Webhook、iOSショートカット、LINE Botからトリガーする。</p>
-        <p><strong>構築内容:</strong></p>
+        <p>「入口」を多様化し、どこからでもAIを起動できるようにする層。n8nワークフローエンジンを中心に、Webhook、LINE Botからトリガー。さらにSSH・リモートデスクトップでMacを直接操作。</p>
+        <p><strong>実装済みの機能:</strong></p>
         <ul class="checklist">
-          <li>n8nホスト実行（npm install -g n8n）</li>
-          <li>n8n → Claude Codeパイプライン</li>
-          <li>Webhook受信（HMAC署名認証付き）</li>
-          <li>iOSショートカット連携（ワンタップ実行）</li>
-          <li>LINE Bot連携（テキスト指示）</li>
-          <li>外出先アクセス（Cloudflare Tunnel）</li>
+          <li class="done">n8nホスト実行（launchd自動起動）</li>
+          <li class="done">n8n → Claude Codeパイプライン（execSync経由）</li>
+          <li class="done">Webhook受信（Cloudflare Tunnel経由）</li>
+          <li class="done">LINE Bot連携（テキスト指示 → Claude実行 → LINE返信）</li>
+          <li class="done">Cloudflare Tunnel（自動起動 + URL自動更新）</li>
+          <li class="done">Tailscale VPN（iPhone ↔ Mac接続）</li>
+          <li class="done">SSH/Moshリモート接続（Moshiアプリ）</li>
+          <li class="done">リモートデスクトップ（AnyDesk）</li>
         </ul>
       </div>
     </details>
 
     <details>
-      <summary>5F: スマホ一言 → 全自動 <span class="badge badge-orange" style="font-size:0.7rem; margin-left:8px;">これから</span></summary>
+      <summary>5F: スマホ → 全自動 + 遠隔操作 <span class="badge badge-green" style="font-size:0.7rem; margin-left:8px;">構築済</span></summary>
       <div class="detail-content">
-        <p>最終到達点。スマホから一言送るだけで、AIが全自動で処理し、結果をスマホに通知する。人間がやるのは「一言送る」だけ。</p>
-        <p><strong>統合内容:</strong></p>
+        <p>最終到達点。スマホからの操作手段が3つ揃い、状況に応じて使い分けられる。</p>
+        <p><strong>スマホからの3つの操作手段:</strong></p>
         <ul class="checklist">
-          <li>「○○リサーチ」→ 転売リサーチ自動実行 → Excel + LINE通知</li>
-          <li>「○○について協議」→ 3者協議自動実行 → サマリー通知</li>
-          <li>「市場チェック」ワンタップ → 定期+オンデマンド → 変動通知</li>
-          <li>CSVアップロード → 時計データ全自動パイプライン → 完了通知</li>
-          <li>「○○を修正して」→ Claude Code実行 → commit/push + 通知</li>
+          <li class="done">LINE Bot: テキスト一言 → Claude Code自動実行 → 結果をLINE返信</li>
+          <li class="done">SSH (Moshi): Claude Code / Codex CLIをスマホから直接操作（音声入力対応）</li>
+          <li class="done">リモートデスクトップ (AnyDesk): Mac画面をスマホから操作</li>
+        </ul>
+        <p><strong>自動化タスク:</strong></p>
+        <ul class="checklist">
+          <li class="done">「○○リサーチ」→ Claude Code実行 → 結果をLINE返信</li>
+          <li class="done">「○○を修正して」→ Claude Code実行 → commit/push + 通知</li>
+          <li class="done">SSH経由で任意のコマンド実行（Claude Code, Codex, git等）</li>
+          <li class="done">AnyDesk経由でGUIアプリの操作（ブラウザ、IDE等）</li>
         </ul>
       </div>
     </details>
@@ -701,20 +710,20 @@
       <div class="card">
         <div class="card-icon" style="color:var(--floor3);">3F</div>
         <h4>Skills/cron自動実行</h4>
-        <p style="color:var(--orange);">部分的</p>
-        <p>Skills（7つ）は構成済だが、ヘッドレス実行基盤・launchd定期実行はまだ。</p>
+        <p style="color:var(--green);">構築済 ✓</p>
+        <p>run-claude.sh、テンプレート、launchd定期実行、ヘルスチェック、API Key管理。</p>
       </div>
       <div class="card">
         <div class="card-icon" style="color:var(--floor4);">4F</div>
         <h4>ゲートウェイ</h4>
-        <p style="color:var(--red);">未構築</p>
-        <p>n8n未導入。スマホからの起動手段なし。入口がCLI（ターミナル）のみ。</p>
+        <p style="color:var(--green);">構築済 ✓</p>
+        <p>n8n + Webhook + LINE Bot + Cloudflare Tunnel + Tailscale VPN + SSH + AnyDesk。</p>
       </div>
       <div class="card">
         <div class="card-icon" style="color:var(--floor5);">5F</div>
-        <h4>全自動統合</h4>
-        <p style="color:var(--red);">未構築</p>
-        <p>スマホから一言で全自動実行、結果通知の仕組みなし。</p>
+        <h4>全自動 + 遠隔操作</h4>
+        <p style="color:var(--green);">構築済 ✓</p>
+        <p>LINE一言実行、SSH直接操作（Moshi）、リモートデスクトップ（AnyDesk）の3手段。</p>
       </div>
     </div>
   </div>
@@ -725,7 +734,7 @@
   <div class="container">
     <h2>全体アーキテクチャ</h2>
 
-    <p>3者協議（Claude + GPT-5 + Gemini）の合意に基づく設計。全コンポーネント無料。</p>
+    <p>3者協議（Claude + GPT-5 + Gemini）の合意に基づく設計。ほぼ全コンポーネント無料（API従量課金のみ発生）。</p>
 
     <h3>データフロー</h3>
     <div class="flow">
@@ -763,12 +772,12 @@
     <h3>システム構成図</h3>
     <div class="arch-diagram">
 ┌──────────────────────────────────────────────────────────────┐
-│                         <span style="color:var(--floor5)">5F: スマホ一言 → 全自動</span>                     │
-│  ┌──────────┐   ┌──────────┐   ┌──────────────────────┐     │
-│  │ iOS      │   │ LINE     │   │ 結果通知             │     │
-│  │ Shortcuts│   │ Bot      │   │ (LINE / macOS通知)   │     │
-│  └────┬─────┘   └────┬─────┘   └──────────▲───────────┘     │
-│───────┼──────────────┼────────────────────┼─────────────────│
+│                   <span style="color:var(--floor5)">5F: スマホ → 全自動 + 遠隔操作</span>                  │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────────────┐     │
+│  │  LINE   │ │  Moshi  │ │ AnyDesk │ │ 結果通知       │     │
+│  │  Bot    │ │ SSH/MOSH│ │ 画面操作│ │ (LINE返信)    │     │
+│  └───┬─────┘ └───┬─────┘ └───┬─────┘ └──────▲────────┘     │
+│──────┼───────────┼───────────┼──────────────┼───────────────│
 │       │    <span style="color:var(--floor4)">4F: ゲートウェイ</span>              │                 │
 │       ▼              ▼                    │                 │
 │  ┌─────────────────────────────────────────────────────┐    │
@@ -806,18 +815,21 @@
 └──────────────────────────────────────────────────────────────┘
     </div>
 
-    <h3>技術スタック（すべて無料）</h3>
+    <h3>技術スタック</h3>
     <table>
       <thead>
         <tr><th>コンポーネント</th><th>技術</th><th>費用</th></tr>
       </thead>
       <tbody>
-        <tr><td>AI処理</td><td>Claude Code CLI（サブスク内）</td><td>¥0</td></tr>
+        <tr><td>AI処理（対話）</td><td>Claude Code CLI（Maxサブスク）</td><td>¥0</td></tr>
+        <tr><td>AI処理（ヘッドレス）</td><td>Anthropic API（従量課金）</td><td>~¥0.01-0.05/回</td></tr>
         <tr><td>ワークフロー</td><td>n8n ホスト実行（npm）</td><td>¥0</td></tr>
         <tr><td>定期実行</td><td>macOS launchd</td><td>¥0</td></tr>
-        <tr><td>スマホ入口</td><td>iOS ショートカット</td><td>¥0</td></tr>
         <tr><td>チャット入口</td><td>LINE Messaging API（無料枠）</td><td>¥0</td></tr>
-        <tr><td>外部アクセス</td><td>Cloudflare Tunnel / Tailscale</td><td>¥0</td></tr>
+        <tr><td>外部アクセス</td><td>Cloudflare Tunnel</td><td>¥0</td></tr>
+        <tr><td>VPN</td><td>Tailscale（デバイス間VPN）</td><td>¥0</td></tr>
+        <tr><td>SSH接続</td><td>Moshi: SSH & MOSH Terminal（iOS）</td><td>¥0</td></tr>
+        <tr><td>リモートデスクトップ</td><td>AnyDesk（画面共有・操作）</td><td>¥0</td></tr>
         <tr><td>通知</td><td>LINE返信 / macOS通知</td><td>¥0</td></tr>
       </tbody>
     </table>
@@ -1094,8 +1106,8 @@
 <!-- Phase 4 -->
 <section id="phase4">
   <div class="container">
-    <h2 style="color:var(--floor5);">Phase 4: 5F到達 — 全自動統合</h2>
-    <p>「スマホから一言」→「AI処理」→「結果通知」が完全自動で回る。</p>
+    <h2 style="color:var(--floor5);">Phase 4: 5F到達 — 全自動 + 遠隔操作</h2>
+    <p>LINE自動実行に加え、SSH・リモートデスクトップでMacを完全遠隔操作。</p>
 
     <h3>統合タスク一覧</h3>
 
@@ -1148,18 +1160,110 @@
       <div class="card" style="border-color: rgba(253,203,110,0.3);">
         <div class="card-icon">📱</div>
         <h4>移動中（スマホ）</h4>
-        <p>LINEで「セイコーのダイバーズリサーチ」と送信。移動中にAIがリサーチし、結果がLINEに届く。</p>
+        <p>簡単な指示はLINEで。複雑な作業はMoshi（SSH）でClaude Codeを直接操作。画面確認はAnyDeskで。</p>
       </div>
       <div class="card" style="border-color: rgba(253,203,110,0.3);">
         <div class="card-icon">💻</div>
         <h4>デスクで（ターミナル）</h4>
-        <p>従来通りClaude Codeを直接使う。複雑なタスクはこちらで。</p>
+        <p>従来通りClaude Codeを直接使う。最も快適な作業環境。</p>
       </div>
       <div class="card" style="border-color: rgba(253,203,110,0.3);">
         <div class="card-icon">🌙</div>
         <h4>夜（自動）</h4>
         <p>日次サマリーが自動生成され、Obsidianに保存。翌朝確認するだけ。</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- 遠隔操作 -->
+<section id="remote">
+  <div class="container">
+    <h2 style="color:var(--floor5);">スマホからの遠隔操作</h2>
+    <p>LINE Bot経由の自動実行に加え、SSH・リモートデスクトップでMacを直接操作できる環境を構築。3つの手段を状況に応じて使い分ける。</p>
+
+    <h3>3つの操作手段</h3>
+
+    <div class="card-grid">
+      <div class="card" style="border-color: rgba(0,184,148,0.3);">
+        <div class="card-icon">💬</div>
+        <h4>LINE Bot（簡単な指示）</h4>
+        <p>LINEで一言送るだけ。n8n経由でClaude Codeが自動実行し、結果をLINEに返信。短い作業向き。</p>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">制約: タイムアウト5分、結果4800文字まで</p>
+      </div>
+      <div class="card" style="border-color: rgba(108,92,231,0.3);">
+        <div class="card-icon">⌨️</div>
+        <h4>SSH / Moshi（直接操作）</h4>
+        <p>Moshiアプリ（iOS）からSSH接続。Claude Code、Codex CLI、git等をスマホから直接操作。音声入力（Whisper）対応。</p>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">推奨: 複雑な作業、長時間タスク、対話的な開発</p>
+      </div>
+      <div class="card" style="border-color: rgba(253,203,110,0.3);">
+        <div class="card-icon">🖥️</div>
+        <h4>AnyDesk（画面操作）</h4>
+        <p>Macの画面をスマホに表示し、タッチで操作。ブラウザ、IDE、GUIアプリを遠隔で使える。</p>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">推奨: GUI操作が必要な場合、ブラウザ確認</p>
+      </div>
+    </div>
+
+    <h3>ネットワーク構成</h3>
+
+    <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────┐
+│                    <span style="color:var(--floor5)">iPhone（外出先）</span>                       │
+│  ┌───────────┐  ┌───────────┐  ┌───────────────────┐    │
+│  │ LINE App  │  │ Moshi App │  │ AnyDesk App       │    │
+│  │ (Bot送信) │  │ (SSH/MOSH)│  │ (リモートデスクトップ)│    │
+│  └─────┬─────┘  └─────┬─────┘  └────────┬──────────┘    │
+│────────┼──────────────┼────────────────┼────────────────│
+│        │     <span style="color:var(--accent-light)">Tailscale VPN (100.x.x.x)</span>       │                │
+│        │              │                │                │
+│        ▼              ▼                ▼                │
+│  ┌───────────┐  ┌───────────┐  ┌───────────────────┐    │
+│  │ Cloudflare│  │ SSH:22    │  │ AnyDesk           │    │
+│  │ Tunnel    │  │ (macOS    │  │ (Accessibility    │    │
+│  │ → n8n     │  │  Remote   │  │  許可必要)         │    │
+│  │ :5678     │  │  Login)   │  │                   │    │
+│  └─────┬─────┘  └───────────┘  └───────────────────┘    │
+│        ▼                                                │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  <span style="color:var(--green-light)">Mac (naokijodan)</span>                                  │   │
+│  │  ├── n8n (localhost:5678)                         │   │
+│  │  ├── Claude Code CLI                              │   │
+│  │  ├── Codex CLI                                    │   │
+│  │  └── run-claude.sh (ヘッドレス実行)                │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+    </div>
+
+    <h3>接続情報</h3>
+    <table>
+      <thead>
+        <tr><th>項目</th><th>詳細</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tailscale VPN</td><td>Mac: 100.127.41.99 / iPhone: 100.105.248.85</td></tr>
+        <tr><td>SSH接続先</td><td>naokijodan@100.127.41.99（Moshiアプリから）</td></tr>
+        <tr><td>Moshプロトコル</td><td>ネットワーク切替・スリープ復帰に強い</td></tr>
+        <tr><td>AnyDesk</td><td>Mac側でアクセシビリティ許可が必要</td></tr>
+      </tbody>
+    </table>
+
+    <h3>使い分けガイド</h3>
+    <table>
+      <thead>
+        <tr><th>やりたいこと</th><th>推奨手段</th><th>理由</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>簡単なタスク指示（5分以内）</td><td>LINE Bot</td><td>一言送るだけで完了、手軽</td></tr>
+        <tr><td>Claude Code / Codexで開発</td><td>SSH (Moshi)</td><td>CLI直接操作、音声入力、セッション維持</td></tr>
+        <tr><td>ブラウザで結果確認</td><td>AnyDesk</td><td>GUI画面が見える</td></tr>
+        <tr><td>git操作、ファイル確認</td><td>SSH (Moshi)</td><td>コマンドが速い</td></tr>
+        <tr><td>長時間の自動実行を監視</td><td>SSH (Moshi) + tmux</td><td>セッション切断しても継続</td></tr>
+      </tbody>
+    </table>
+
+    <div class="alert alert-success">
+      <strong>Moshiアプリの特徴:</strong> Claude Code専用設計。Whisper音声入力でプロンプトを口述入力できる。MOSHプロトコルにより、電車移動中のネットワーク切替でも接続が維持される。
     </div>
   </div>
 </section>
@@ -1199,7 +1303,8 @@
         <tr><td>重要タスクの誤実行</td><td>承認フロー（通知→確認→実行）</td><td>n8n</td></tr>
         <tr><td>サブスク上限超過</td><td>実行回数カウンター（日10回）</td><td>run-claude.sh</td></tr>
         <tr><td>通信の盗聴</td><td>TLS（Cloudflare Tunnel標準）</td><td>Cloudflare</td></tr>
-        <tr><td>シークレット漏洩</td><td>環境変数管理、.envファイル</td><td>ホスト</td></tr>
+        <tr><td>シークレット漏洩</td><td>ファイル権限管理（chmod 600）、.gitignore</td><td>ホスト</td></tr>
+        <tr><td>SSH不正アクセス</td><td>パスワード認証 + Tailscale VPN経由のみ</td><td>macOS + Tailscale</td></tr>
       </tbody>
     </table>
 
@@ -1374,38 +1479,40 @@
 
     <div class="timeline">
       <div class="tl-item active">
-        <div class="tl-phase" style="color:var(--floor3);">Phase 1 — 3F完成</div>
+        <div class="tl-phase" style="color:var(--green);">Phase 1 — 3F完成 ✓</div>
         <div class="tl-title">Skills/自動化基盤の整備</div>
         <div class="tl-desc">
-          ヘッドレス実行ラッパー作成 → プロンプトテンプレート整備 → 実行回数カウンター → Skills化 → launchd定期実行設定
+          run-claude.sh作成 → テンプレート整備 → 実行回数カウンター → API Key管理 → launchd定期実行設定 → ヘルスチェック
         </div>
       </div>
-      <div class="tl-item">
-        <div class="tl-phase" style="color:var(--floor4);">Phase 2 — 4F基盤</div>
+      <div class="tl-item active">
+        <div class="tl-phase" style="color:var(--green);">Phase 2 — 4F基盤 ✓</div>
         <div class="tl-title">n8nゲートウェイ構築</div>
         <div class="tl-desc">
-          n8nホストインストール → Claude Code パイプライン → Webhookセキュリティ → トリガー型タスク実装
+          n8nホストインストール → Claude Code パイプライン（execSync） → Cloudflare Tunnel → Tunnel Watcher自動更新
         </div>
       </div>
-      <div class="tl-item">
-        <div class="tl-phase" style="color:var(--floor4);">Phase 3 — 4F完成</div>
+      <div class="tl-item active">
+        <div class="tl-phase" style="color:var(--green);">Phase 3 — 4F完成 ✓</div>
         <div class="tl-title">スマホ入口の構築</div>
         <div class="tl-desc">
-          iOSショートカット連携 → LINE Bot構築 → Cloudflare Tunnel設定 → エンドツーエンドテスト
+          LINE Bot構築 → LINE→Claude→LINE返信パイプライン → Cloudflare Tunnel外部公開 → エンドツーエンドテスト成功
         </div>
       </div>
-      <div class="tl-item">
-        <div class="tl-phase" style="color:var(--floor5);">Phase 4 — 5F到達</div>
-        <div class="tl-title">全自動統合</div>
+      <div class="tl-item active">
+        <div class="tl-phase" style="color:var(--green);">Phase 4 — 5F到達 ✓</div>
+        <div class="tl-title">遠隔操作 + 全自動統合</div>
         <div class="tl-desc">
-          全プロトコル統合 → 通知フロー整備 → エラー監視 → 運用安定化
+          Tailscale VPN設定 → SSH/Moshi接続 → AnyDeskリモートデスクトップ → 3手段による完全遠隔操作環境
         </div>
       </div>
     </div>
 
     <h3>日次チェックリスト</h3>
     <ul class="checklist">
-      <li>n8n が稼働しているか（localhost:5678）</li>
+      <li class="done">n8n が稼働しているか（localhost:5678）</li>
+      <li class="done">Cloudflare Tunnelが接続しているか</li>
+      <li class="done">Tailscaleが接続しているか</li>
       <li>今日の実行回数（counter.txt）</li>
       <li>失敗タスクがないか（n8n 実行履歴）</li>
       <li>ディスク容量（ログの肥大化チェック）</li>
@@ -1417,6 +1524,7 @@
       <li>n8nのアップデート確認</li>
       <li>Claude Code CLIのアップデート確認</li>
       <li>Cloudflare Tunnelの接続状態確認</li>
+      <li>Tailscaleのデバイス状態確認</li>
     </ul>
   </div>
 </section>
@@ -1458,11 +1566,11 @@
 <footer class="footer">
   <div class="container">
     <p>AI活用 5階層インフラ構築ガイド</p>
-    <p>3者協議設計 | Mac1台完結 | 追加費用 ¥0</p>
+    <p>3者協議設計 | Mac1台完結 | 全5階層 構築完了</p>
     <p style="margin-top: 12px; font-size: 0.8rem;">
       参考: <a href="https://note.com/akira_papa_ai/n/n0c6f7e35a6f1" style="color:var(--accent-light);" target="_blank">あきらパパ「AI活用の5階層構造」</a>
     </p>
-    <p style="margin-top: 8px; font-size: 0.75rem; color: #555;">Generated: 2026-02-22</p>
+    <p style="margin-top: 8px; font-size: 0.75rem; color: #555;">Generated: 2026-02-22 | Updated: 2026-02-24</p>
   </div>
 </footer>
 
