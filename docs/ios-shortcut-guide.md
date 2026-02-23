@@ -4,7 +4,9 @@
 
 ## 1. 前提条件
 
-- Cloudflare Tunnelが設定済みで、外部から `https://ai-infra.{your-domain}` に到達できること。
+- Cloudflare Quick Tunnelが起動中であること（`scripts/start-quick-tunnel.sh --daemon`）。
+- 現在の公開URL: `https://{tunnel-url}.trycloudflare.com`（`~/ai-scripts/.tunnel-url`で確認）。
+- 注意: Quick Tunnelは再起動するとURLが変わるため、再起動後はショートカットのURLも更新が必要。
 - HMAC秘密鍵（Webhook検証用シークレット）をiPhoneで安全に参照できること。
   - 例: iCloudキーチェーンの「安全メモ」を利用、またはロック付きメモ・パスワード管理アプリに保存。
   - 秘密鍵は他者と共有しないでください。ショートカット内では「入力を求める」や「変数」に保持し、直接画面に表示しない構成を推奨します。
@@ -40,7 +42,7 @@
 
 5) URLの内容を取得（POST）
 - アクション「URLの内容を取得」を追加。
-- URL: `https://ai-infra.{your-domain}/webhook/Wbc9jJFq15HgqnGa/webhook/claude-exec-secure`
+- URL: `https://{tunnel-url}.trycloudflare.com/webhook/Wbc9jJFq15HgqnGa/webhook/claude-exec-secure`
 - メソッド: POST
 - ヘッダーを2つ追加:
   - `Content-Type: application/json`
