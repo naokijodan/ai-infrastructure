@@ -29,6 +29,12 @@
 		<string>http</string>
 		<key>N8N_HOST</key>
 		<string>localhost</string>
+		<key>NODE_FUNCTION_ALLOW_BUILTIN</key>
+		<string>child_process,crypto,fs,os,path</string>
+		<key>LINE_CHANNEL_ACCESS_TOKEN</key>
+		<string>BYx5qBj5aLhHRBfPHkQWLTqDDiL/Ds1s+lKS/f8yWDKDOwfOgC5epMoF346KQ2CkuDjH8vKbCl986VWvsy01jdqKI3p530cXPCXDTYDRH4PHX11vsodbLVZr3+d0hRg55G4mL7vAotNPJhgYZw/CnAdB04t89/1O/w1cDnyilFU=</string>
+		<key>LINE_CHANNEL_SECRET</key>
+		<string>f46f0d2daf1e79db8f1830b1a9e2884e</string>
 	</dict>
 </dict>
 </plist>
