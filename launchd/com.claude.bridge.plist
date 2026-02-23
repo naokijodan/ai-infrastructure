@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.claude.bridge</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/naokijodan/.nvm/versions/node/v22.18.0/bin/node</string>
+		<string>/Users/naokijodan/ai-scripts/claude-bridge.js</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>StandardOutPath</key>
+	<string>/Users/naokijodan/ai-scripts/logs/claude-bridge-stdout.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/naokijodan/ai-scripts/logs/claude-bridge-stderr.log</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/naokijodan/.local/bin:/Users/naokijodan/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+		<key>HOME</key>
+		<string>/Users/naokijodan</string>
+	</dict>
+</dict>
+</plist>
